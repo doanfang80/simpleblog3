@@ -1,0 +1,157 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    name: Simple blog
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+        
+      - name: Clean all directories
+        run: ls | grep -v ".github" | while read filename; do rm -rf "$filename"; done
+
+      - name: Create app
+        run: |
+          npm install -g gatsby-cli
+          gatsby new simpleblog2
+          cd simpleblog2
+          npm install --save gatsby-source-storyblok storyblok-react
+        
+      - name: Copy the .github directory
+        run: cp .github ./simpleblog2 -R
+          
+      - name: Edit the gatsby-config.js file
+        working-directory: ./simpleblog2
+        env:
+          SCRIPT: ${{ secrets.SCRIPT }}
+        run: |
+          echo $SCRIPT | base64 --decode > ./gatsby-config.js
+          
+      - name: Edit the gatsby-node.js file
+        working-directory: ./simpleblog2
+        env:
+          NODE: ${{ secrets.NODE }}
+        run: |
+          echo $NODE | base64 --decode > ./gatsby-node.js
+          
+      - name: Edit the storyblok-entry.js file
+        working-directory: ./simpleblog2
+        env:
+          STORYBLOK_ENTRY: ${{ secrets.STORYBLOK_ENTRY }}
+        run: |
+          mkdir ./src/templates
+          echo $STORYBLOK_ENTRY | base64 --decode > ./src/templates/storyblok-entry.js
+          
+      - name: Edit the page.js file
+        working-directory: ./simpleblog2
+        env:
+          PAGE: ${{ secrets.PAGE }}
+        run: |
+          echo $PAGE | base64 --decode > ./src/components/page.js
+          
+      - name: Edit the feature.js file
+        working-directory: ./simpleblog2
+        env:
+          FEATURE: ${{ secrets.FEATURE }}
+        run: |
+          echo $FEATURE | base64 --decode > ./src/components/feature.js
+          
+      - name: Edit the grid.js file
+        working-directory: ./simpleblog2
+        env:
+          GRID: ${{ secrets.GRID }}
+        run: |
+          echo $GRID | base64 --decode > ./src/components/grid.js
+          
+      - name: Edit the teaser.js file
+        working-directory: ./simpleblog2
+        env:
+          TEASER: ${{ secrets.TEASER }}
+        run: |
+          echo $TEASER | base64 --decode > ./src/components/teaser.js
+          
+      - name: Edit the component_not_found.js file
+        working-directory: ./simpleblog2
+        env:
+          COMPONENT_NOT_FOUND: ${{ secrets.COMPONENT_NOT_FOUND }}
+        run: |
+          echo $COMPONENT_NOT_FOUND | base64 --decode > ./src/components/component_not_found.js
+      
+      - name: Edit the components.js file
+        working-directory: ./simpleblog2
+        env:
+          COMPONENTS: ${{ secrets.COMPONENTS }}
+        run: |
+          echo $COMPONENTS | base64 --decode > ./src/components/components.js
+          
+      - name: Edit the navi.js file
+        working-directory: ./simpleblog2
+        env:
+          NAVI: ${{ secrets.NAVI }}
+        run: |
+          echo $NAVI | base64 --decode > ./src/components/navi.js
+          
+      - name: Edit the navi_item.js file
+        working-directory: ./simpleblog2
+        env:
+          NAVI_ITEM: ${{ secrets.NAVI_ITEM }}
+        run: |
+          echo $NAVI_ITEM | base64 --decode > ./src/components/navi_item.js
+          
+      - name: Edit the state.json file
+        working-directory: ./simpleblog2
+        env:
+          STATE: ${{ secrets.STATE }}
+        run: |
+          mkdir ./.netlify
+          echo $STATE | base64 --decode > ./.netlify/state.json
+          
+      - name: Edit the html.js file
+        working-directory: ./simpleblog2
+        env:
+          HTML: ${{ secrets.HTML }}
+        run: |
+          echo $HTML | base64 --decode > ./src/html.js
+          
+      - name: Edit the editor.js file
+        working-directory: ./simpleblog2
+        env:
+          EDITOR: ${{ secrets.EDITOR }}
+        run: |
+          echo $EDITOR | base64 --decode > ./src/pages/editor.js
+          
+      
+          
+      - name: Git-init
+        working-directory: ./simpleblog2
+        run: git init
+
+      - name: Git-add
+        working-directory: ./simpleblog2
+        run: git add .
+
+      - name: Git-config
+        working-directory: ./simpleblog2
+        run: |
+          git config --global user.email "doanfang80@gmail.com"
+          git config --global user.name "Doan Fang"
+          
+      - name: Git-commit
+        working-directory: ./simpleblog2
+        run: git commit -m 'First commit'
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          directory: ./simpleblog2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true               
